@@ -6,11 +6,18 @@ const parser = port.pipe(new Readline({delimiter: `\r\n`}));
 const GPS = require('gps');
 const gps = new GPS;
 let last = null;
+let boatHeading = 0;
+
+const boatPos = {
+	latitude: 0,
+	longitude: 0
+}
 
 let compass = new HMC5883L(1);
 function getHeading() {
 	compass.getHeadingDegrees('x', 'y', (err, heading) => {
-        	console.log(heading);
+		console.log(heading);
+		boatHeading = heading;
 	});
 }
 
@@ -37,6 +44,12 @@ parser.on('data', (data) => {
 const express = require('express');
 const app = express();
 app.use(express.static('public'));
+app.get("/gps", (req, res) => {
+	res.send(JSON.stringify(boatPos));
+});
+app.get("/heading", (req, res) => {
+	res.send(boatHeading.toFixed(0));
+});
 app.listen(80, () => {
 	console.log('Listening on port 80');
 });
